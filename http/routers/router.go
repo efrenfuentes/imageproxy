@@ -28,5 +28,6 @@ func SetRoute(router *mux.Router, path, name, method string, handlerFunc func(w 
 func Init() *mux.Router {
 	router := mux.NewRouter()
 	router = SetPingRoutes(router)
+	router = SetImageRoutes(router)
 	return router
 }

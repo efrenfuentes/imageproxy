@@ -5,5 +5,8 @@
   },
   "logger": {
     "routes": "on"
+  },
+  "images": {
+    "endpoint": "http://localhost:9000/"
   }
 }
