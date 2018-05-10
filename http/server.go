@@ -1,18 +1,17 @@
 package http
 
-
 import (
 	"log"
 	"net/http"
 
-	"github.com/efrenfuentes/imageproxy/http/settings"
 	"github.com/efrenfuentes/imageproxy/http/routers"
+	"github.com/efrenfuentes/imageproxy/http/settings"
 )
 
-
+// Server is our http server
 type Server struct{}
 
-
+// Run execute our http server
 func (s *Server) Run() {
 	log.Printf("Loading settings...\n")
 	settings.Init()
