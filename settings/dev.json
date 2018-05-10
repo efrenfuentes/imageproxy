@@ -4,9 +4,11 @@
     "port": "4567"
   },
   "logger": {
-    "routes": "on"
+    "routes": "on",
+    "cache": "on"
   },
   "images": {
-    "endpoint": "http://localhost:9000/"
+    "endpoint": "http://localhost:9000/",
+    "cache_dir": "/tmp/imageproxy/"
   }
 }
