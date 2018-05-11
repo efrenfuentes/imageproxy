@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"errors"
 	"fmt"
 	"image"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 )
 
 // DownloadImage download the image to path
-func DownloadImage(path string) (image.Image, string, error) {
+func DownloadImage(path string) error {
 	var format string
 	var myImage image.Image
 
@@ -19,29 +20,11 @@ func DownloadImage(path string) (image.Image, string, error) {
 	cacheDir := mySettings["images"].(map[string]interface{})["cache_dir"].(string)
 	loggerCache := mySettings["logger"].(map[string]interface{})["cache"].(string)
 
-	cacheEnable := false
-	if cacheDir != "" {
-		cacheEnable = true
-	}
-
-	filePath := cacheDir + path
+	filePath := cacheDir + "original/" + path
 
 	if _, err := os.Stat(filePath); err == nil {
 		if loggerCache == "on" {
 			fmt.Printf("on cache %s\n", filePath)
-		}
-
-		infile, err := os.Open(filePath)
-		if err != nil {
-			return nil, "error", err
-		}
-		defer infile.Close()
-
-		// Decode will figure out what type of image is in the file on its own.
-		// We just have to be sure all the image packages we want are imported.
-		myImage, format, err = image.Decode(infile)
-		if err != nil {
-			return nil, "error", err
 		}
 	} else {
 		imageURL := imagesEndPoint + path
@@ -52,19 +35,17 @@ func DownloadImage(path string) (image.Image, string, error) {
 		r, err := http.Get(imageURL)
 
 		if err != nil || r.StatusCode != 200 {
-			return nil, "error", err
+			return errors.New("can't download the image")
 		}
 
 		defer r.Body.Close()
 		myImage, format, err = image.Decode(r.Body)
 		if err != nil {
-			return nil, "error", err
+			return err
 		}
 
-		if cacheEnable {
-			SaveOnCache(myImage, format, filePath)
-		}
+		SaveOnCache(myImage, format, filePath)
 	}
 
-	return myImage, format, nil
+	return nil
 }

@@ -1,69 +1,28 @@
 package controllers
 
 import (
-	"bytes"
-	"image"
-	"image/gif"
-	"image/jpeg"
-	"image/png"
-	"net/http"
-	"strconv"
+	"fmt"
 
+	"github.com/efrenfuentes/imageproxy/http/settings"
 	"github.com/efrenfuentes/imageproxy/lib"
-	"github.com/gorilla/mux"
+	"github.com/valyala/fasthttp"
 )
 
-func ImageIndex(w http.ResponseWriter, r *http.Request) {
-	urlParams := mux.Vars(r)
-	// geometry := urlParams["geometry"]
-	path := urlParams["path"]
+// ImageIndex serve the image
+func ImageIndex(ctx *fasthttp.RequestCtx) {
+	mySettings := settings.Get()
+	cacheDir := mySettings["images"].(map[string]interface{})["cache_dir"].(string)
 
-	image, format, err := lib.DownloadImage(path)
+	// geometry := ctx.UserValue("geometry").(string)
+	path := ctx.UserValue("path").(string)[1:]
 
-	if err != nil || format == "error" {
-		http.Error(w, "Sorry can't find a valid image on the requested url!", 415)
+	err := lib.DownloadImage(path)
+
+	if err != nil { // we can't download the image
+		ctx.SetStatusCode(415)
+		fmt.Fprint(ctx, "Sorry can't find a valid image on the requested url!")
+	} else { // we are ready to serve the image as static file
+		fasthttp.ServeFile(ctx, cacheDir+string(ctx.Path()))
+		// fasthttp.ServeFile(ctx, cacheDir+geometry+"/"+path)
 	}
-
-	// transform the image
-	//   return error if geometry is not valid
-	//   return error if can't transform image
-	// return the image
-
-	if err := writeImage(w, image, format); err != nil {
-		http.Error(w, "Image can't be served", 500)
-	}
-}
-
-// writeImage encodes an image 'img' in correct format and writes it into ResponseWriter.
-func writeImage(w http.ResponseWriter, img image.Image, format string) error {
-
-	buffer := new(bytes.Buffer)
-
-	if format == "" {
-		format = "png"
-	}
-
-	if format == "jpeg" {
-		w.Header().Set("Content-Type", "image/jpeg")
-		if err := jpeg.Encode(buffer, img, nil); err != nil {
-			return err
-		}
-	} else if format == "png" {
-		w.Header().Set("Content-Type", "image/png")
-		if err := png.Encode(buffer, img); err != nil {
-			return err
-		}
-	} else if format == "gif" {
-		w.Header().Set("Content-Type", "image/gif")
-		if err := gif.Encode(buffer, img, nil); err != nil {
-			return err
-		}
-	}
-
-	w.Header().Set("Content-Length", strconv.Itoa(len(buffer.Bytes())))
-	if _, err := w.Write(buffer.Bytes()); err != nil {
-		return err
-	}
-
-	return nil
 }

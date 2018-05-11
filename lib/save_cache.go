@@ -1,7 +1,7 @@
 package lib
 
 import (
-	"fmt"
+	"errors"
 	"image"
 	"image/jpeg"
 	"os"
@@ -15,12 +15,12 @@ func SaveOnCache(img image.Image, format string, path string) error {
 	// outputFile is a File type which satisfies Writer interface
 	err := os.MkdirAll(filepath.Dir(path), 0777)
 	if err != nil {
-		fmt.Printf("can't create cache file %s\n", path)
+		return errors.New("can't create cache directory")
 	}
 
 	outputFile, err := os.Create(path)
 	if err != nil {
-		fmt.Printf("can't create cache file %s\n", path)
+		return errors.New("can't create cache file")
 	}
 
 	// Encode takes a writer interface and an image interface

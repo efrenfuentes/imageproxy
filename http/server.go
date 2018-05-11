@@ -2,7 +2,8 @@ package http
 
 import (
 	"log"
-	"net/http"
+
+	"github.com/valyala/fasthttp"
 
 	"github.com/efrenfuentes/imageproxy/http/routers"
 	"github.com/efrenfuentes/imageproxy/http/settings"
@@ -24,11 +25,10 @@ func (s *Server) Run() {
 
 	log.Printf("Creating routes...\n")
 	routes := routers.Init()
-	http.Handle("/", routes)
 
 	log.Printf("Server starting on port %v [%s]\n",
 		listenIn,
 		settings.GetEnvironment())
 
-	log.Fatal(http.ListenAndServe(listenIn, nil))
+	log.Fatal(fasthttp.ListenAndServe(listenIn, routes.Handler))
 }

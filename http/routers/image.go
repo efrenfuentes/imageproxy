@@ -1,13 +1,13 @@
 package routers
 
 import (
+	"github.com/buaazp/fasthttprouter"
 	"github.com/efrenfuentes/imageproxy/controllers"
-	"github.com/gorilla/mux"
 )
 
-func SetImageRoutes(router *mux.Router) *mux.Router {
-
-	SetRoute(router, "/{geometry}/{path:.+}", "ImageIndex", "GET", controllers.ImageIndex)
+// SetImageRoutes set routes for images
+func SetImageRoutes(router *fasthttprouter.Router) *fasthttprouter.Router {
+	SetRoute(router, "/:geometry/*path", "ImageIndex", "GET", controllers.ImageIndex)
 
 	return router
 }

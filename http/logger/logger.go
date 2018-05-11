@@ -1,23 +1,21 @@
 package logger
 
 import (
-	"log"
-	"net/http"
-	"time"
+	"github.com/valyala/fasthttp"
 )
 
-func Logger(inner http.Handler, name string) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
+func Logger(inner fasthttp.RequestHandler, name string) fasthttp.RequestHandler {
+	// return fasthttp.RequestHandler(func(ctx *fasthttp.RequestCtx) {
+	// 	start := time.Now()
 
-		inner.ServeHTTP(w, r)
+	// 	inner.ServeHTTP(ctx)
 
-		log.Printf(
-			"%s\t%s\t%s\t%s",
-			r.Method,
-			r.RequestURI,
-			name,
-			time.Since(start),
-		)
-	})
+	// 	log.Printf(
+	// 		"%s\t%s\t%s\t%s",
+	// 		r.Method,
+	// 		r.RequestURI,
+	// 		name,
+	// 		time.Since(start),
+	// 	)
+	// })
 }
