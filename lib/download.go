@@ -1,70 +1,34 @@
 package lib
 
 import (
-	"fmt"
-	"image"
-	"net/http"
+	"log"
 	"os"
 
 	"github.com/efrenfuentes/imageproxy/http/settings"
 )
 
 // DownloadImage download the image to path
-func DownloadImage(path string) (image.Image, string, error) {
-	var format string
-	var myImage image.Image
-
+func DownloadImage(path string) error {
 	mySettings := settings.Get()
 	imagesEndPoint := mySettings["images"].(map[string]interface{})["endpoint"].(string)
 	cacheDir := mySettings["images"].(map[string]interface{})["cache_dir"].(string)
 	loggerCache := mySettings["logger"].(map[string]interface{})["cache"].(string)
 
-	cacheEnable := false
-	if cacheDir != "" {
-		cacheEnable = true
-	}
+	filePath := cacheDir + "original/" + path
 
-	filePath := cacheDir + path
-
-	if _, err := os.Stat(filePath); err == nil {
+	if _, err := os.Stat(filePath); err == nil { // File already on cache
 		if loggerCache == "on" {
-			fmt.Printf("on cache %s\n", filePath)
+			log.Printf("on cache %s\n", filePath)
 		}
-
-		infile, err := os.Open(filePath)
-		if err != nil {
-			return nil, "error", err
-		}
-		defer infile.Close()
-
-		// Decode will figure out what type of image is in the file on its own.
-		// We just have to be sure all the image packages we want are imported.
-		myImage, format, err = image.Decode(infile)
-		if err != nil {
-			return nil, "error", err
-		}
-	} else {
+	} else { // We need download the file
 		imageURL := imagesEndPoint + path
 		if loggerCache == "on" {
-			fmt.Printf("dowloading %s\n", imageURL)
+			log.Printf("dowloading %s\n", imageURL)
 		}
 
-		r, err := http.Get(imageURL)
-
-		if err != nil || r.StatusCode != 200 {
-			return nil, "error", err
-		}
-
-		defer r.Body.Close()
-		myImage, format, err = image.Decode(r.Body)
-		if err != nil {
-			return nil, "error", err
-		}
-
-		if cacheEnable {
-			SaveOnCache(myImage, format, filePath)
-		}
+		// Store image on cache
+		return SaveOnCache(imageURL, filePath)
 	}
 
-	return myImage, format, nil
+	return nil
 }
