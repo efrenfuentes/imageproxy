@@ -5,6 +5,7 @@
   },
   "logger": {
     "routes": "on",
+    "transform": "on",
     "cache": "on"
   },
   "images": {

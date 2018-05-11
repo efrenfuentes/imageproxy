@@ -26,7 +26,7 @@ func DownloadImage(path string) error {
 			log.Printf("dowloading %s\n", imageURL)
 		}
 
-		// Store image on cache
+		// Store original image on cache
 		return SaveOnCache(imageURL, filePath)
 	}
 
