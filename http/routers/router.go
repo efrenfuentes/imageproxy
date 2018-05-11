@@ -4,6 +4,7 @@ import (
 	"github.com/buaazp/fasthttprouter"
 	"github.com/valyala/fasthttp"
 
+	"github.com/efrenfuentes/imageproxy/http/logger"
 	"github.com/efrenfuentes/imageproxy/http/settings"
 )
 
@@ -17,7 +18,7 @@ func SetRoute(router *fasthttprouter.Router, path, name, method string, handlerF
 	handler = handlerFunc
 
 	if loggerRoutes == "on" {
-		// handler = logger.Logger(handler, name)
+		handler = logger.Logger(handler, name)
 	}
 
 	router.Handle(method, path, handler)

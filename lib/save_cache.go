@@ -2,33 +2,40 @@ package lib
 
 import (
 	"errors"
-	"image"
-	"image/jpeg"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 )
 
 // SaveOnCache store the image on disk to avoid download it again
-func SaveOnCache(img image.Image, format string, path string) error {
-	// create directories if don't exist
-	// save the image
-	// outputFile is a File type which satisfies Writer interface
+func SaveOnCache(imageURL string, path string) error {
+	// Create the directory if not exists
 	err := os.MkdirAll(filepath.Dir(path), 0777)
 	if err != nil {
 		return errors.New("can't create cache directory")
 	}
 
+	// Create the destination file
 	outputFile, err := os.Create(path)
 	if err != nil {
 		return errors.New("can't create cache file")
 	}
+	defer outputFile.Close()
 
-	// Encode takes a writer interface and an image interface
-	// We pass it the File and the RGBA
-	jpeg.Encode(outputFile, img, nil)
+	// Get the data from URL
+	response, err := http.Get(imageURL)
 
-	// Don't forget to close files
-	outputFile.Close()
+	if err != nil || response.StatusCode != 200 {
+		return errors.New("can't download the image")
+	}
+	defer response.Body.Close()
+
+	// Write the body to file
+	_, err = io.Copy(outputFile, response.Body)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

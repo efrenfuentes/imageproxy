@@ -1,10 +1,7 @@
 package lib
 
 import (
-	"errors"
-	"fmt"
-	"image"
-	"net/http"
+	"log"
 	"os"
 
 	"github.com/efrenfuentes/imageproxy/http/settings"
@@ -12,9 +9,6 @@ import (
 
 // DownloadImage download the image to path
 func DownloadImage(path string) error {
-	var format string
-	var myImage image.Image
-
 	mySettings := settings.Get()
 	imagesEndPoint := mySettings["images"].(map[string]interface{})["endpoint"].(string)
 	cacheDir := mySettings["images"].(map[string]interface{})["cache_dir"].(string)
@@ -22,29 +16,18 @@ func DownloadImage(path string) error {
 
 	filePath := cacheDir + "original/" + path
 
-	if _, err := os.Stat(filePath); err == nil {
+	if _, err := os.Stat(filePath); err == nil { // File already on cache
 		if loggerCache == "on" {
-			fmt.Printf("on cache %s\n", filePath)
+			log.Printf("on cache %s\n", filePath)
 		}
-	} else {
+	} else { // We need download the file
 		imageURL := imagesEndPoint + path
 		if loggerCache == "on" {
-			fmt.Printf("dowloading %s\n", imageURL)
+			log.Printf("dowloading %s\n", imageURL)
 		}
 
-		r, err := http.Get(imageURL)
-
-		if err != nil || r.StatusCode != 200 {
-			return errors.New("can't download the image")
-		}
-
-		defer r.Body.Close()
-		myImage, format, err = image.Decode(r.Body)
-		if err != nil {
-			return err
-		}
-
-		SaveOnCache(myImage, format, filePath)
+		// Store image on cache
+		return SaveOnCache(imageURL, filePath)
 	}
 
 	return nil
