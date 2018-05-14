@@ -17,7 +17,7 @@ func ImageIndex(ctx *fasthttp.RequestCtx) {
 
 	// transform image if is needed
 	if geometry != "original" {
-		lib.TransformImage(path, filepath, geometry)
+		lib.TransformImage(path, filepath, geometry, version(ctx))
 	}
 
 	if err != nil { // we can't download the image
@@ -26,4 +26,14 @@ func ImageIndex(ctx *fasthttp.RequestCtx) {
 	} else { // we are ready to serve the image as static file
 		fasthttp.ServeFile(ctx, filepath)
 	}
+}
+
+func version(ctx *fasthttp.RequestCtx) string {
+	version := string(ctx.QueryArgs().Peek("ver"))
+
+	if version != "" {
+		version = "-" + version
+	}
+
+	return version
 }

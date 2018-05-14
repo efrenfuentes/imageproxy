@@ -18,7 +18,7 @@ type geometryStruct struct {
 }
 
 // TransformImage do the image transformations
-func TransformImage(path, srcImagePath, geometry string) (string, error) {
+func TransformImage(path, srcImagePath, geometry, version string) (string, error) {
 	mySettings := settings.Get()
 	cacheDir := mySettings["images"].(map[string]interface{})["cache_dir"].(string)
 	loggerTransform := mySettings["logger"].(map[string]interface{})["transform"].(string)
@@ -29,7 +29,7 @@ func TransformImage(path, srcImagePath, geometry string) (string, error) {
 		return "", err
 	}
 
-	imagePath := cacheDir + HashDir(geometry, geometry+"/"+path)
+	imagePath := cacheDir + HashDir(geometry, geometry+"/"+getPathVersion(path, version))
 
 	// Open the source image.
 	src, err := imaging.Open(srcImagePath)
@@ -75,4 +75,13 @@ func getGeometry(geometry string) (geometryStruct, error) {
 
 	return geometryStruct{}, errors.New("invalid geometry")
 
+}
+
+func getPathVersion(path, version string) string {
+	dir := filepath.Dir(path)
+	basename := filepath.Base(path)
+	ext := filepath.Ext(path)
+	clean := basename[:len(basename)-len(ext)]
+
+	return dir + clean + version + ext
 }
