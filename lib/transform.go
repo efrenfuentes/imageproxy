@@ -18,7 +18,7 @@ type geometryStruct struct {
 }
 
 // TransformImage do the image transformations
-func TransformImage(path, geometry string) error {
+func TransformImage(path, srcImagePath, geometry string) (string, error) {
 	mySettings := settings.Get()
 	cacheDir := mySettings["images"].(map[string]interface{})["cache_dir"].(string)
 	loggerTransform := mySettings["logger"].(map[string]interface{})["transform"].(string)
@@ -26,17 +26,16 @@ func TransformImage(path, geometry string) error {
 	geometryData, err := getGeometry(geometry)
 	if err != nil {
 		log.Printf("invalid geometry: %v", err)
-		return err
+		return "", err
 	}
 
-	srcImagePath := cacheDir + "original/" + path
-	imagePath := cacheDir + geometry + "/" + path
+	imagePath := cacheDir + HashDir(geometry, geometry+"/"+path)
 
 	// Open the source image.
 	src, err := imaging.Open(srcImagePath)
 	if err != nil {
 		log.Printf("failed to open image: %v", err)
-		return err
+		return "", err
 	}
 
 	// Resize the image preserving the aspect ratio.
@@ -47,20 +46,20 @@ func TransformImage(path, geometry string) error {
 	err = os.MkdirAll(filepath.Dir(imagePath), 0777)
 	if err != nil {
 		log.Printf("can't create cache directory: %v", err)
-		return err
+		return "", err
 	}
 
 	err = imaging.Save(image, imagePath)
 	if err != nil {
 		log.Printf("failed to save image: %v", err)
-		return err
+		return "", err
 	}
 
 	if loggerTransform == "on" {
 		log.Printf("%s transformed to %s", srcImagePath, imagePath)
 	}
 
-	return nil
+	return imagePath, nil
 
 }
 

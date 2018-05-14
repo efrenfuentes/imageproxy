@@ -3,18 +3,20 @@ package lib
 import (
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/efrenfuentes/imageproxy/http/settings"
 )
 
 // DownloadImage download the image to path
-func DownloadImage(path string) error {
+func DownloadImage(path string) (string, error) {
 	mySettings := settings.Get()
 	imagesEndPoint := mySettings["images"].(map[string]interface{})["endpoint"].(string)
 	cacheDir := mySettings["images"].(map[string]interface{})["cache_dir"].(string)
 	loggerCache := mySettings["logger"].(map[string]interface{})["cache"].(string)
 
-	filePath := cacheDir + "original/" + path
+	basename := filepath.Base(path)
+	filePath := cacheDir + "originals/" + HashName(basename) + "/" + basename
 
 	if _, err := os.Stat(filePath); err == nil { // File already on cache
 		if loggerCache == "on" {
@@ -30,5 +32,5 @@ func DownloadImage(path string) error {
 		return SaveOnCache(imageURL, filePath)
 	}
 
-	return nil
+	return filePath, nil
 }

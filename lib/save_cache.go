@@ -9,17 +9,17 @@ import (
 )
 
 // SaveOnCache store the image on disk to avoid download it again
-func SaveOnCache(imageURL string, path string) error {
+func SaveOnCache(imageURL string, path string) (string, error) {
 	// Create the directory if not exists
 	err := os.MkdirAll(filepath.Dir(path), 0777)
 	if err != nil {
-		return errors.New("can't create cache directory")
+		return "", errors.New("can't create cache directory")
 	}
 
 	// Create the destination file
 	outputFile, err := os.Create(path)
 	if err != nil {
-		return errors.New("can't create cache file")
+		return "", errors.New("can't create cache file")
 	}
 	defer outputFile.Close()
 
@@ -27,15 +27,15 @@ func SaveOnCache(imageURL string, path string) error {
 	response, err := http.Get(imageURL)
 
 	if err != nil || response.StatusCode != 200 {
-		return errors.New("can't download the image")
+		return "", errors.New("can't download the image")
 	}
 	defer response.Body.Close()
 
 	// Write the body to file
 	_, err = io.Copy(outputFile, response.Body)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return path, nil
 }
