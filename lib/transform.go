@@ -31,7 +31,7 @@ func TransformImage(path, srcImagePath, geometry, version string) (string, error
 		return imagePath, err
 	}
 
-	if _, err := os.Stat(srcImagePath); err == nil { // File already transformed
+	if _, err := os.Stat(imagePath); err == nil { // File already transformed
 		if loggerTransform == "on" {
 			log.Printf("%s using transformed cache %s", srcImagePath, imagePath)
 		}
