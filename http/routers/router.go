@@ -30,5 +30,6 @@ func SetRoute(router *fasthttprouter.Router, path, name, method string, handlerF
 func Init() *fasthttprouter.Router {
 	router := fasthttprouter.New()
 	router = SetImageRoutes(router)
+	router = SetHealthRoutes(router)
 	return router
 }
