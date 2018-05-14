@@ -23,40 +23,46 @@ func TransformImage(path, srcImagePath, geometry, version string) (string, error
 	cacheDir := mySettings["images"].(map[string]interface{})["cache_dir"].(string)
 	loggerTransform := mySettings["logger"].(map[string]interface{})["transform"].(string)
 
+	imagePath := cacheDir + HashDir(geometry, geometry+"/"+getPathVersion(path, version))
+
 	geometryData, err := getGeometry(geometry)
 	if err != nil {
 		log.Printf("invalid geometry: %v", err)
-		return "", err
+		return imagePath, err
 	}
 
-	imagePath := cacheDir + HashDir(geometry, geometry+"/"+getPathVersion(path, version))
+	if _, err := os.Stat(srcImagePath); err == nil { // File already transformed
+		if loggerTransform == "on" {
+			log.Printf("%s using transformed cache %s", srcImagePath, imagePath)
+		}
+	} else { // We need transform the file
+		// Open the source image.
+		src, err := imaging.Open(srcImagePath)
+		if err != nil {
+			log.Printf("failed to open image: %v", err)
+			return imagePath, err
+		}
 
-	// Open the source image.
-	src, err := imaging.Open(srcImagePath)
-	if err != nil {
-		log.Printf("failed to open image: %v", err)
-		return "", err
-	}
+		// Resize the image preserving the aspect ratio.
+		image := imaging.Fill(src, geometryData.width, geometryData.height, imaging.Center, imaging.Lanczos)
 
-	// Resize the image preserving the aspect ratio.
-	image := imaging.Fill(src, geometryData.width, geometryData.height, imaging.Center, imaging.Lanczos)
+		// Save the resulting image as JPEG.
+		// Create the directory if not exists
+		err = os.MkdirAll(filepath.Dir(imagePath), 0777)
+		if err != nil {
+			log.Printf("can't create cache directory: %v", err)
+			return imagePath, err
+		}
 
-	// Save the resulting image as JPEG.
-	// Create the directory if not exists
-	err = os.MkdirAll(filepath.Dir(imagePath), 0777)
-	if err != nil {
-		log.Printf("can't create cache directory: %v", err)
-		return "", err
-	}
+		err = imaging.Save(image, imagePath)
+		if err != nil {
+			log.Printf("failed to save image: %v", err)
+			return imagePath, err
+		}
 
-	err = imaging.Save(image, imagePath)
-	if err != nil {
-		log.Printf("failed to save image: %v", err)
-		return "", err
-	}
-
-	if loggerTransform == "on" {
-		log.Printf("%s transformed to %s", srcImagePath, imagePath)
+		if loggerTransform == "on" {
+			log.Printf("%s transformed to %s", srcImagePath, imagePath)
+		}
 	}
 
 	return imagePath, nil
