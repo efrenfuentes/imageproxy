@@ -4,9 +4,12 @@
     "port": "4567"
   },
   "logger": {
-    "routes": "off"
+    "routes": "on",
+    "transform": "on",
+    "cache": "on"
   },
   "images": {
-    "endpoint": "http://localhost:9000/"
+    "endpoint": "http://s3.amazonaws.com/",
+    "cache_dir": "/opt/images/"
   }
 }
