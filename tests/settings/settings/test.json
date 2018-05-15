@@ -1,9 +1,0 @@
-{
-  "Application": "Name of Application",
-  "Version": 1,
-  "Array": ["Element 1", "Element 2"],
-  "Parent": {
-    "Child1": 1,
-    "Child2": 2
-  }
-}
