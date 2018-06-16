@@ -4,9 +4,9 @@
     "port": "4567"
   },
   "logger": {
-    "routes": "on",
-    "transform": "on",
-    "cache": "on"
+    "routes": "off",
+    "transform": "off",
+    "cache": "off"
   },
   "images": {
     "endpoint": "http://s3.amazonaws.com/",
