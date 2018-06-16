@@ -17,6 +17,20 @@ func ImageIndex(ctx *fasthttp.RequestCtx) {
 	path := ctx.UserValue("path").(string)[1:]
 	extension := strings.ToLower(filepath.Ext(path))
 
+	key := path + version(ctx)
+	e := `"` + key + `"`
+	ctx.Response.Header.Set("Etag", e)
+	ctx.Response.Header.Set("Cache-Control", "public,max-age=60400") // 7 days
+
+	match := string(ctx.Request.Header.Peek("If-None-Match")[:])
+	if match == e {
+		if strings.Contains(match, e) {
+			// TODO: Check if image has changes
+			ctx.SetStatusCode(304)
+			return
+		}
+	}
+
 	if validGeometry(geometry) && validExtension(extension) {
 		filepath, err := lib.DownloadImage(path) // Download the original image
 
